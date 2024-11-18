@@ -1,8 +1,8 @@
-import * as THREE from 'three';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as THREE from './libs/three/three.module.js';
+import { FontLoader } from './jsm/loaders/FontLoader.js';
+import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
+import { TextGeometry } from './jsm/geometries/TextGeometry.js';
+import { OrbitControls } from './jsm/controls/OrbitControls.js';
 
 // Создаём сцену
 const scene = new THREE.Scene();
@@ -61,7 +61,7 @@ const labelArrows = [];
 const attachmentPoints = []; // Массив для хранения точек привязки (красных шариков)
 
 // Пути к моделям автомобилей
-const carModels = ['car1.glb', 'car2.glb', 'car3.glb'];
+const carModels = ['./car1.glb', './car2.glb', './car3.glb'];
 
 // Обновленные данные выносок для каждой модели
 const labelData = {
@@ -135,13 +135,10 @@ const labelData = {
 
 // Загрузка шрифта
 const fontLoader = new FontLoader();
-fontLoader.load(
-	'https://threejs.org/examples/fonts/helvetiker_bold.typeface.json',
-	function (loadedFont) {
-		font = loadedFont;
-		loadCarModels();
-	}
-);
+fontLoader.load('./fonts/helvetiker_bold.typeface.json', function (loadedFont) {
+	font = loadedFont;
+	loadCarModels();
+});
 
 // Загрузка моделей автомобилей
 const gltfLoader = new GLTFLoader();
