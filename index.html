@@ -16,8 +16,8 @@
 	<body>
 		<div class="container">
 			<div class="code-section">
-				<h2>Класс Автомобиля на C++</h2>
-				<p>Задача: Создать класс автомобиля с наследованием и свойствами</p>
+				<h2>Структуры Автомобиля на C++</h2>
+				<p>Задача: Создать структуры автомобиля с наследованием и свойствами</p>
 				<div class="code-head">
 					<div class="code-title">Код</div>
 					<div class="code-extension">.cpp</div>
@@ -28,7 +28,7 @@
 <span class="keyword">#include</span> &lt;iostream&gt;
 <span class="keyword">using</span> <span class="keyword">namespace</span> std;
 
-<span class="keyword">class</span> <span class="type">Car</span> {
+<span class="keyword">struct</span> <span class="type">Car</span> {
 <span class="keyword">public</span>:
     <span class="type">string</span> <span class="variable">model</span>;
     <span class="type">int</span> <span class="variable">wheels</span>;
@@ -49,17 +49,17 @@
     }
 };
 
-<span class="keyword">class</span> <span class="type">CarModel1</span> : <span class="keyword">public</span> <span class="type">Car</span> {
+<span class="keyword">struct</span> <span class="type">CarModel1</span> : <span class="keyword">public</span> <span class="type">Car</span> {
 <span class="keyword">public</span>:
     <span class="function">CarModel1</span>(): <span class="type">Car</span>(<span class="string">"Car Model 1"</span>) {}
 };
 
-<span class="keyword">class</span> <span class="type">CarModel2</span> : <span class="keyword">public</span> <span class="type">Car</span> {
+<span class="keyword">struct</span> <span class="type">CarModel2</span> : <span class="keyword">public</span> <span class="type">Car</span> {
 <span class="keyword">public</span>:
     <span class="function">CarModel2</span>(): <span class="type">Car</span>(<span class="string">"Car Model 2"</span>) {}
 };
 
-<span class="keyword">class</span> <span class="type">CarModel3</span> : <span class="keyword">public</span> <span class="type">Car</span> {
+<span class="keyword">struct</span> <span class="type">CarModel3</span> : <span class="keyword">public</span> <span class="type">Car</span> {
 <span class="keyword">public</span>:
     <span class="function">CarModel3</span>(): <span class="type">Car</span>(<span class="string">"Car Model 3"</span>) {}
 };
