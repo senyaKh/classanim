@@ -68,29 +68,29 @@ const carModels = ['./car1.glb', './car2.glb', './car3.glb'];
 const labelData = {
 	car1: [
 		{
-			name: 'Hood',
+			name: 'Hood =  Metal',
 			position: new THREE.Vector3(-0.19, 2.1, -0.49), // Позиция точки привязки
 			labelPosition: new THREE.Vector3(-0.17, 2.97, 0.19), // Позиция выноски
 		},
 		{
-			name: 'Doors',
+			name: 'Doors = 4',
 			position: new THREE.Vector3(0.8, 1.74, -0.12),
 			labelPosition: new THREE.Vector3(2.41, 2.5, -1.3),
 		},
 		{
-			name: 'Headlights',
+			name: 'Headlights = 2',
 			position: new THREE.Vector3(-0.63, 1.44, 2.16),
 			labelPosition: new THREE.Vector3(-2.67, 2.8, 2.5),
 		},
 		{
-			name: 'Wheels',
+			name: 'Wheels = 4',
 			position: new THREE.Vector3(0.85, 1, 1.5),
 			labelPosition: new THREE.Vector3(3.39, 2.36, 1.03),
 		},
 	],
 	car2: [
 		{
-			name: 'Hood',
+			name: 'Hood = metal',
 			position: new THREE.Vector3(0.0, 4.3, -1.52),
 			labelPosition: new THREE.Vector3(-0.06, 5.47, -1.08),
 		},
