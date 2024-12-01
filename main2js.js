@@ -4,7 +4,7 @@ import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
 import { TextGeometry } from './jsm/geometries/TextGeometry.js';
 import { OrbitControls } from './jsm/controls/OrbitControls.js';
 
-// Создаём сцену
+// Создаем сцену
 const scene = new THREE.Scene();
 
 // Настройка камеры
@@ -13,14 +13,13 @@ const containerWidth = container.clientWidth;
 const containerHeight = container.clientHeight;
 const camera = new THREE.PerspectiveCamera(45, containerWidth / containerHeight, 0.1, 1000);
 camera.position.set(0, 5, 20);
-camera.lookAt(scene.position);
 
 // Настройка рендерера
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 renderer.setSize(containerWidth, containerHeight);
 container.appendChild(renderer.domElement);
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setClearColor(0xa0a0a0, 1); // Светло-серый фон
+renderer.setClearColor(0xd3d3d3, 1); // Светло-серый фон
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -33,77 +32,120 @@ directionalLight.position.set(10, 20, 10);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
+// Загрузка текстуры земли
+const textureLoader = new THREE.TextureLoader();
+const groundTexture = textureLoader.load('textures/ground_texture.jpg');
+groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+groundTexture.repeat.set(100, 100);
+
 // Добавление плоскости (земли)
-const planeGeometry = new THREE.PlaneGeometry(500, 500);
-const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+const planeGeometry = new THREE.PlaneGeometry(2000, 2000);
+const planeMaterial = new THREE.MeshStandardMaterial({ map: groundTexture });
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 plane.rotation.x = -Math.PI / 2;
-plane.position.y = 0;
+plane.position.y = 0; // Опущено на уровень пола
 plane.receiveShadow = true;
 scene.add(plane);
 
 // Добавление сетки
-const gridHelper = new THREE.GridHelper(500, 50, 0x000000, 0x000000);
-gridHelper.position.y = 0.01;
+const gridHelper = new THREE.GridHelper(2000, 500, 0x808080, 0x808080); // Светло-серая сетка
+gridHelper.position.y = 0.01; // Немного выше плоскости, чтобы было видно
 scene.add(gridHelper);
 
 // Настройка OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
+controls.enablePan = true;
+controls.minDistance = 10;
+controls.maxDistance = 100;
 
 // Инициализация переменных
 let font;
 const cars = [];
-let currentCarIndex = 0;
 const labels = [];
+const labelArrows = [];
+const attachmentPoints = [];
+const carNameLabels = [];
 
 // Пути к моделям автомобилей
-const carModels = ['car.glb']; // Используем одну модель
+const carModels = ['car1.glb', 'car2.glb', 'car3.glb'];
+
+// Данные выносок для каждой модели
+const labelData = {
+	car1: [
+		{
+			name: 'Hood',
+			position: new THREE.Vector3(-0.19, 1.35, -0.49),
+			labelPosition: new THREE.Vector3(-0.17, 2.97, 0.19),
+		},
+		{
+			name: 'Doors',
+			position: new THREE.Vector3(0.7, 1.24, -0.12),
+			labelPosition: new THREE.Vector3(2.41, 2.5, -1.3),
+		},
+		{
+			name: 'Headlights',
+			position: new THREE.Vector3(-0.63, 0.74, 2.16),
+			labelPosition: new THREE.Vector3(-2.67, 2.8, 2.5),
+		},
+		{
+			name: 'Wheels',
+			position: new THREE.Vector3(0.8, 0.5, 1.5),
+			labelPosition: new THREE.Vector3(3.39, 2.0, 1.03),
+		},
+	],
+	car2: [
+		{
+			name: 'Hood',
+			position: new THREE.Vector3(0.0, 2.88, -1.52),
+			labelPosition: new THREE.Vector3(-0.06, 4.47, -1.08),
+		},
+		{
+			name: 'Doors',
+			position: new THREE.Vector3(1, 1.31, 0),
+			labelPosition: new THREE.Vector3(2.12, 4.55, 0.0),
+		},
+		{
+			name: 'Headlights',
+			position: new THREE.Vector3(-0.7, 0.7, 1.5),
+			labelPosition: new THREE.Vector3(-2.68, 3.24, 2.3),
+		},
+		{
+			name: 'Wheels',
+			position: new THREE.Vector3(1.1, 0.53, 0.89),
+			labelPosition: new THREE.Vector3(3.54, 3.13, 2.02),
+		},
+	],
+	car3: [
+		{
+			name: 'Hood',
+			position: new THREE.Vector3(0.0, 1.09, -0.31),
+			labelPosition: new THREE.Vector3(0.0, 2.96, -0.34),
+		},
+		{
+			name: 'Doors',
+			position: new THREE.Vector3(0.8, 0.5, 0),
+			labelPosition: new THREE.Vector3(1.4, 2.5, 0.0),
+		},
+		{
+			name: 'Headlights',
+			position: new THREE.Vector3(-0.61, 0.5, 1.92),
+			labelPosition: new THREE.Vector3(-3.13, 1.56, 2.4),
+		},
+		{
+			name: 'Wheels',
+			position: new THREE.Vector3(0.85, 0.42, 1.33),
+			labelPosition: new THREE.Vector3(3, 1.5, 2.0),
+		},
+	],
+};
 
 // Загрузка шрифта
 const fontLoader = new FontLoader();
 fontLoader.load('./fonts/helvetiker_bold.typeface.json', function (loadedFont) {
 	font = loadedFont;
-	loadCarModels();
 });
-
-function createTextOverCar(text, position) {
-	const textGeometry = new TextGeometry(text, {
-		font: font,
-		size: 0.8,
-		height: 0.2,
-		curveSegments: 12,
-		bevelEnabled: true,
-		bevelThickness: 0.03,
-		bevelSize: 0.02,
-		bevelSegments: 5,
-	});
-
-	textGeometry.computeBoundingBox();
-	const center = textGeometry.boundingBox.getCenter(new THREE.Vector3());
-	textGeometry.translate(-center.x, -center.y, -center.z);
-
-	const textMaterial = new THREE.MeshStandardMaterial({
-		color: 0xffd700, // Золотой цвет
-	});
-
-	const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-	textMesh.position.copy(position);
-	scene.add(textMesh);
-
-	return textMesh;
-}
-
-function placeTextAboveCar(car, text) {
-	const box = new THREE.Box3().setFromObject(car);
-	const size = box.getSize(new THREE.Vector3());
-	const position = box.getCenter(new THREE.Vector3());
-	position.y += size.y + 1.5;
-
-	const label = createTextOverCar(text, position);
-	labels.push(label);
-}
 
 // Загрузка моделей автомобилей
 const gltfLoader = new GLTFLoader();
@@ -113,18 +155,46 @@ function centerModel(model) {
 	const center = box.getCenter(new THREE.Vector3());
 	const size = box.getSize(new THREE.Vector3());
 
-	model.position.sub(center);
+	model.position.sub(center); // Центрируем модель
 
+	// Опускаем модель на плоскость
 	const yOffset = size.y / 2 - 0.7;
 	model.position.y = yOffset;
 }
 
-function loadCarModels() {
-	let loadedModels = 0;
+function loadSingleCar() {
+	gltfLoader.load(
+		'model/' + carModels[0],
+		function (gltf) {
+			const model = gltf.scene;
+			centerModel(model);
+			model.traverse(function (child) {
+				if (child.isMesh) {
+					child.castShadow = true;
+					child.receiveShadow = true;
+					child.material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+				}
+			});
+			model.visible = true;
+			cars.push(model);
+			scene.add(model);
+			addLabelsToCar(model, 'car1');
+			addCarNameLabel(model, 'car1');
+			renderScene();
+		},
+		undefined,
+		function (error) {
+			console.error('Ошибка загрузки модели:', error);
+		}
+	);
+}
 
+function loadCarArray() {
+	let loadedModels = 0;
+	const positions = [-8, 0, 8]; // Положение по оси X для машин
 	carModels.forEach((modelPath, index) => {
 		gltfLoader.load(
-			`model/${modelPath}`,
+			'model/' + modelPath,
 			function (gltf) {
 				const model = gltf.scene;
 				centerModel(model);
@@ -132,103 +202,201 @@ function loadCarModels() {
 					if (child.isMesh) {
 						child.castShadow = true;
 						child.receiveShadow = true;
+						// Установка цвета материала
+						let color;
+						if (index === 0) color = 0xff0000; // Красный
+						else if (index === 1) color = 0x00ff00; // Зеленый
+						else if (index === 2) color = 0x0000ff; // Синий
+						child.material = new THREE.MeshStandardMaterial({ color: color });
 					}
 				});
-				model.visible = false;
+				model.visible = true;
+				model.position.x = positions[index];
+				cars.push(model);
 				scene.add(model);
-				cars[index] = model;
+				addLabelsToCar(model, 'car' + (index + 1));
+				addCarNameLabel(model, 'car' + (index + 1));
 				loadedModels++;
-
 				if (loadedModels === carModels.length) {
-					animateScene();
+					renderScene();
 				}
 			},
 			undefined,
 			function (error) {
-				console.error(`Ошибка загрузки модели ${modelPath}:`, error);
+				console.error('Ошибка загрузки модели:', error);
 			}
 		);
 	});
 }
 
-function applyColorToCar(car, index) {
-	const colors = [0xff0000, 0x00ff00, 0x0000ff]; // Красный, зеленый, синий
-	const color = colors[index % colors.length];
+function addLabelsToCar(car, carKey) {
+	const currentLabelData = labelData[carKey];
 
-	car.traverse(function (child) {
-		if (child.isMesh) {
-			child.material = child.material.clone();
-			child.material.color.setHex(color);
-		}
+	currentLabelData.forEach((data) => {
+		const label = createLabel(data.name);
+		const labelPosition = data.labelPosition.clone(); // Используем сохраненную позицию выноски
+		label.position.copy(labelPosition);
+		car.add(label); // Добавляем лейбл в модель машины
+		labels.push(label);
+
+		// Создание точки привязки на машине
+		const attachmentPoint = new THREE.Mesh(
+			new THREE.SphereGeometry(0.1, 8, 8),
+			new THREE.MeshBasicMaterial({ color: 0xff0000 })
+		);
+		const attachmentPosition = data.position.clone();
+		attachmentPoint.position.copy(attachmentPosition);
+		car.add(attachmentPoint);
+		attachmentPoints.push(attachmentPoint); // Добавляем в массив для последующего удаления
+
+		// Создание линии между выноской и точкой привязки
+		const points = [];
+		points.push(new THREE.Vector3(0, 0, 0)); // Локальная позиция точки привязки
+		points.push(
+			new THREE.Vector3(
+				data.labelPosition.x - data.position.x,
+				data.labelPosition.y - data.position.y,
+				data.labelPosition.z - data.position.z
+			)
+		); // Локальная позиция выноски относительно точки привязки
+
+		const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+		const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+		const line = new THREE.Line(lineGeometry, lineMaterial);
+		attachmentPoint.add(line); // Добавляем линию как дочерний объект точки привязки
+		labelArrows.push(line);
 	});
 }
 
-function showCar() {
-	document.getElementById('showCarButton').style.display = 'none';
-
-	cars[0].visible = true;
-	currentCarIndex = 0;
-
-	placeTextAboveCar(cars[0], 'Car1');
-
-	document.getElementById('createArrayButton').style.display = 'inline-block';
-}
-
-function createStructureArray() {
-	cars[currentCarIndex].visible = false;
-	labels.forEach((label) => scene.remove(label));
-	labels.length = 0;
-
-	for (let i = 0; i < 3; i++) {
-		const carClone = cars[0].clone();
-		scene.add(carClone);
-		cars.push(carClone);
-
-		carClone.visible = true;
-		carClone.position.x = (i - 1) * 5; // Размещаем машины по горизонтали
-
-		applyColorToCar(carClone, i);
-
-		// Добавляем лейбл над каждой машиной
-		placeTextAboveCar(carClone, `Car${i + 1}`);
-	}
-	document.getElementById('createArrayButton').style.display = 'none';
-
-	document.getElementById('restartButton').style.display = 'inline-block';
-	document.getElementById('restartButton').onclick = function () {
-		location.reload();
+function addCarNameLabel(car, carKey) {
+	const carNames = {
+		car1: 'Red Car',
+		car2: 'Green Car',
+		car3: 'Blue Car',
 	};
-	updateCodeBlock();
+
+	const carName = carNames[carKey];
+
+	const nameLabel = createCarNameLabel(carName);
+
+	const box = new THREE.Box3().setFromObject(car);
+	const size = box.getSize(new THREE.Vector3());
+	nameLabel.position.set(0, size.y + 1, 0);
+
+	car.add(nameLabel);
+	carNameLabels.push(nameLabel);
 }
 
-function updateCodeBlock() {
-	const codeBlock = document.getElementById('codeBlock');
-	const code = `
-<span class="keyword">#include</span> &lt;iostream&gt;
-<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+function createLabel(text) {
+	const textGeometry = new TextGeometry(text, {
+		font: font,
+		size: 0.4,
+		height: 0.05,
+		curveSegments: 12,
+		bevelEnabled: true,
+		bevelThickness: 0.01,
+		bevelSize: 0.02,
+		bevelOffset: 0,
+		bevelSegments: 5,
+	});
 
-<span class="keyword">struct</span> <span class="type">Car</span> {
-    <span class="type">string</span> <span class="variable">model</span>;
-    <span class="type">string</span> <span class="variable">color</span>;
-};
+	textGeometry.computeBoundingBox();
+	const center = textGeometry.boundingBox.getCenter(new THREE.Vector3());
+	textGeometry.translate(-center.x, -center.y, -center.z);
 
-<span class="keyword">int</span> <span class="function">main</span>() {
-    <span class="type">Car</span> <span class="variable">car1</span> = {<span class="string">"Car 1"</span>, <span class="string">"Red"</span>};
-    <span class="type">Car</span> <span class="variable">car2</span> = {<span class="string">"Car 2"</span>, <span class="string">"Green"</span>};
-    <span class="type">Car</span> <span class="variable">car3</span> = {<span class="string">"Car 3"</span>, <span class="string">"Blue"</span>};
+	const textMaterial = new THREE.MeshStandardMaterial({
+		color: 0xffffff,
+	});
 
-    <span class="variable">cout</span> &lt;&lt; <span class="string">"Model: "</span> &lt;&lt; <span class="variable">car1.model</span> &lt;&lt; <span class="string">", Color: "</span> &lt;&lt; <span class="variable">car1.color</span> &lt;&lt; <span class="string">"\\n"</span>;
-    <span class="variable">cout</span> &lt;&lt; <span class="string">"Model: "</span> &lt;&lt; <span class="variable">car2.model</span> &lt;&lt; <span class="string">", Color: "</span> &lt;&lt; <span class="variable">car2.color</span> &lt;&lt; <span class="string">"\\n"</span>;
-    <span class="variable">cout</span> &lt;&lt; <span class="string">"Model: "</span> &lt;&lt; <span class="variable">car3.model</span> &lt;&lt; <span class="string">", Color: "</span> &lt;&lt; <span class="variable">car3.color</span> &lt;&lt; <span class="string">"\\n"</span>;
+	const textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-    <span class="keyword">return</span> <span class="value">0</span>;
+	// Добавляем фон к тексту
+	const backgroundMaterial = new THREE.MeshBasicMaterial({
+		color: 0x000000,
+		opacity: 0.5,
+		transparent: true,
+	});
+	const backgroundGeometry = new THREE.PlaneGeometry(
+		(textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x) * 1.2,
+		(textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y) * 1.5
+	);
+	const backgroundMesh = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+	backgroundMesh.position.set(0, 0, -0.05); // Немного позади текста
+
+	const labelGroup = new THREE.Group();
+	labelGroup.add(backgroundMesh);
+	labelGroup.add(textMesh);
+
+	return labelGroup;
 }
-    `;
-	codeBlock.innerHTML = code;
+
+function createCarNameLabel(text) {
+	const textGeometry = new TextGeometry(text, {
+		font: font,
+		size: 1.0,
+		height: 0.1,
+		curveSegments: 12,
+		bevelEnabled: true,
+		bevelThickness: 0.02,
+		bevelSize: 0.05,
+		bevelOffset: 0,
+		bevelSegments: 5,
+	});
+
+	textGeometry.computeBoundingBox();
+	const center = textGeometry.boundingBox.getCenter(new THREE.Vector3());
+	textGeometry.translate(-center.x, -center.y, -center.z);
+
+	const textMaterial = new THREE.MeshStandardMaterial({
+		color: 0xffff00,
+		emissive: 0x444400,
+	});
+
+	const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+	return textMesh;
 }
 
-document.getElementById('showCarButton').addEventListener('click', showCar);
-document.getElementById('createArrayButton').addEventListener('click', createStructureArray);
+// Обработчики кнопок
+document.getElementById('showCarButton').addEventListener('click', function () {
+	loadSingleCar();
+	document.getElementById('showCarButton').style.display = 'none';
+	document.getElementById('createArrayButton').style.display = 'inline-block';
+});
+
+document.getElementById('createArrayButton').addEventListener('click', function () {
+	// Удаляем предыдущую машину
+	cars.forEach((car) => {
+		scene.remove(car);
+	});
+	cars.length = 0;
+	// Удаляем лейблы и точки привязки
+	labels.length = 0;
+	labelArrows.length = 0;
+	attachmentPoints.length = 0;
+	carNameLabels.length = 0;
+
+	loadCarArray();
+	document.getElementById('createArrayButton').style.display = 'none';
+	document.getElementById('resetSceneButton').style.display = 'inline-block';
+});
+
+document.getElementById('resetSceneButton').addEventListener('click', function () {
+	// Удаляем все машины
+	cars.forEach((car) => {
+		scene.remove(car);
+	});
+	cars.length = 0;
+	// Удаляем лейблы и точки привязки
+	labels.length = 0;
+	labelArrows.length = 0;
+	attachmentPoints.length = 0;
+	carNameLabels.length = 0;
+
+	document.getElementById('resetSceneButton').style.display = 'none';
+	document.getElementById('showCarButton').style.display = 'inline-block';
+	renderScene();
+});
 
 window.addEventListener('resize', onWindowResize, false);
 
@@ -241,8 +409,11 @@ function onWindowResize() {
 	renderer.setSize(containerWidth, containerHeight);
 }
 
-function animateScene() {
-	requestAnimationFrame(animateScene);
+function renderScene() {
+	requestAnimationFrame(renderScene);
 	controls.update();
 	renderer.render(scene, camera);
 }
+
+// Начинаем рендер сцены
+renderScene();
