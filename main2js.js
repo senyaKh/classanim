@@ -12,7 +12,7 @@ const container = document.getElementById('container');
 const containerWidth = container.clientWidth;
 const containerHeight = container.clientHeight;
 const camera = new THREE.PerspectiveCamera(45, containerWidth / containerHeight, 0.1, 1000);
-camera.position.set(0, 5, 20);
+camera.position.set(0, 5, 30);
 
 // Настройка рендерера
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -75,69 +75,85 @@ const carModels = ['car1.glb', 'car2.glb', 'car3.glb'];
 const labelData = {
 	car1: [
 		{
-			name: 'Hood',
-			position: new THREE.Vector3(-0.19, 1.35, -0.49),
+			name: 'Hood = Metal',
+			position: new THREE.Vector3(0, 1.4, -0.49),
 			labelPosition: new THREE.Vector3(-0.17, 2.97, 0.19),
 		},
 		{
-			name: 'Doors',
-			position: new THREE.Vector3(0.7, 1.24, -0.12),
-			labelPosition: new THREE.Vector3(2.41, 2.5, -1.3),
+			name: 'Doors = 4',
+			position: new THREE.Vector3(0.85, 0.85, -0.12),
+			labelPosition: new THREE.Vector3(2.2, 2.1, -1.3),
 		},
 		{
-			name: 'Headlights',
-			position: new THREE.Vector3(-0.63, 0.74, 2.16),
-			labelPosition: new THREE.Vector3(-2.67, 2.8, 2.5),
+			name: 'Headlights = 2',
+			position: new THREE.Vector3(-0.63, 0.64, 2.16),
+			labelPosition: new THREE.Vector3(-4, 1, 2.5),
 		},
 		{
-			name: 'Wheels',
-			position: new THREE.Vector3(0.8, 0.5, 1.5),
-			labelPosition: new THREE.Vector3(3.39, 2.0, 1.03),
+			name: 'Wheels = 4',
+			position: new THREE.Vector3(0.8, 0.3, 1.5),
+			labelPosition: new THREE.Vector3(3.5, 1.5, 1.03),
+		},
+		{
+			 	name: 'Color = Red',
+			 	position: new THREE.Vector3(0, 1, 1),
+			 	labelPosition: new THREE.Vector3(-5, 5, 1),
 		},
 	],
 	car2: [
 		{
-			name: 'Hood',
-			position: new THREE.Vector3(0.0, 2.88, -1.52),
-			labelPosition: new THREE.Vector3(-0.06, 4.47, -1.08),
+			name: 'Hood = Metal',
+			position: new THREE.Vector3(0.0, 1.4, -1.52),
+			labelPosition: new THREE.Vector3(-0.17, 2.97, 0.19),
 		},
 		{
-			name: 'Doors',
-			position: new THREE.Vector3(1, 1.31, 0),
-			labelPosition: new THREE.Vector3(2.12, 4.55, 0.0),
+			name: 'Doors = 4',
+			position: new THREE.Vector3(0.85, 0.85, -0.12),
+			labelPosition: new THREE.Vector3(2.12, 2.1, 0.0),
 		},
 		{
-			name: 'Headlights',
-			position: new THREE.Vector3(-0.7, 0.7, 1.5),
-			labelPosition: new THREE.Vector3(-2.68, 3.24, 2.3),
+			name: 'Headlights = 2',
+			position: new THREE.Vector3(-0.63, 0.64, 2.16),
+			labelPosition: new THREE.Vector3(-4, 1, 2.5),
 		},
 		{
-			name: 'Wheels',
-			position: new THREE.Vector3(1.1, 0.53, 0.89),
-			labelPosition: new THREE.Vector3(3.54, 3.13, 2.02),
+			name: 'Wheels = 4',
+			position: new THREE.Vector3(0.8, 0.3, 1.5),
+			labelPosition: new THREE.Vector3(3.54, 1, 2.02),
 		},
+		{
+			name: 'Color = Green',
+			position: new THREE.Vector3(0, 1, 1),
+			 	labelPosition: new THREE.Vector3(-5, 5, 1),
+   },
 	],
 	car3: [
 		{
-			name: 'Hood',
-			position: new THREE.Vector3(0.0, 1.09, -0.31),
-			labelPosition: new THREE.Vector3(0.0, 2.96, -0.34),
+			name: 'Hood = Metal',
+			position: new THREE.Vector3(0.0, 1.4, -0.31),
+			labelPosition: new THREE.Vector3(-0.17, 2.97, 0.19),
+
 		},
 		{
-			name: 'Doors',
-			position: new THREE.Vector3(0.8, 0.5, 0),
-			labelPosition: new THREE.Vector3(1.4, 2.5, 0.0),
+			name: 'Doors = 4',
+			position: new THREE.Vector3(0.85, 0.85, -0.12),
+			labelPosition: new THREE.Vector3(1.4, 2.1, 0.0),
 		},
 		{
-			name: 'Headlights',
-			position: new THREE.Vector3(-0.61, 0.5, 1.92),
-			labelPosition: new THREE.Vector3(-3.13, 1.56, 2.4),
+			name: 'Headlights = 2',
+			position: new THREE.Vector3(-0.63, 0.64, 2.16),
+			labelPosition: new THREE.Vector3(-4, 2.5, 2.5),
 		},
 		{
-			name: 'Wheels',
-			position: new THREE.Vector3(0.85, 0.42, 1.33),
-			labelPosition: new THREE.Vector3(3, 1.5, 2.0),
+			name: 'Wheels = 4',
+			position: new THREE.Vector3(-0.63, 0.64, 2.16),
+			labelPosition: new THREE.Vector3(3, 1, 2.0),
 		},
+		{
+			name: 'Color = Blue',
+			position: new THREE.Vector3(0, 1, 1),
+			labelPosition: new THREE.Vector3(-5, 5, 1),
+   },
 	],
 };
 
@@ -160,6 +176,7 @@ function centerModel(model) {
 	// Опускаем модель на плоскость
 	const yOffset = size.y / 2 - 0.7;
 	model.position.y = yOffset;
+	
 }
 
 function loadSingleCar() {
@@ -212,6 +229,16 @@ function loadCarArray() {
 				});
 				model.visible = true;
 				model.position.x = positions[index];
+					// Adjust Z position to ensure proper layering
+					if (index === 2) { // car3
+						model.position.z = -10; // Move car3 slightly forward
+					}
+					else if (index === 0){
+						model.position.z = -10; // Move car3 slightly forward
+					}
+					 else {
+						model.position.z = 0; // Keep car1 and car2 at the base position
+					}
 				cars.push(model);
 				scene.add(model);
 				addLabelsToCar(model, 'car' + (index + 1));
@@ -270,9 +297,9 @@ function addLabelsToCar(car, carKey) {
 
 function addCarNameLabel(car, carKey) {
 	const carNames = {
-		car1: 'Red Car',
-		car2: 'Green Car',
-		car3: 'Blue Car',
+		car1: 'Car 1',
+		car2: 'Car 2',
+		car3: 'Car 3',
 	};
 
 	const carName = carNames[carKey];
